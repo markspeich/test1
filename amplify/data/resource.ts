@@ -11,6 +11,7 @@ const schema = a.schema({
     .model({
       content: a.string(),
       isDone: a.boolean(),
+      dueDate: a.date(),
     })
     .authorization((allow) => [allow.owner()]),
 });
