@@ -5,11 +5,14 @@ import { Authenticator } from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
 import TodoCreateForm from './ui-components/TodoCreateForm';
 import { TodoCreateFormInputValues } from "./ui-components/TodoCreateForm";
+import { uploadData } from 'aws-amplify/storage'
 
 const client = generateClient<Schema>();
 
 function App() {
   const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+  const [echo, setEcho] = useState<String | null | undefined>('');
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     client.models.Todo.observeQuery().subscribe({
@@ -37,12 +40,36 @@ function App() {
     }
   }
 
+  // onClick handler for the "Query" button which will run the echo query
+  async function handleQuery() {
+    const { data, errors } = await client.queries.echo({ content: "echo" })
+    if (errors) {
+      console.error(errors)
+    } else {
+      let t: React.SetStateAction<String>
+      setEcho(data?.content)
+    }
+  }
+
+  const handleChange = (event: any) => {
+    setFile(event.target.files[0]);
+  }
+
+  const handleUpload = () => {
+    if (file === null) return
+    uploadData({
+      path: `picture-submissions/${file?.name}`,
+      data: file,
+    })
+  }
+
   return (
     <Authenticator>
       {({ signOut, user }) => (
         <main>
           <h1>{user?.signInDetails?.loginId}'s todos</h1>
           <h1>My todos</h1>
+          <button onClick={handleQuery}>Query</button>
           <button onClick={createTodo}>+ new</button>
           <ul>
             {todos.map((todo) => (
@@ -50,6 +77,14 @@ function App() {
             ))}
           </ul>
           <TodoCreateForm onSubmit={onSubmit} />
+          <div>
+            <input type="file" onChange={handleChange} />
+            <button
+              onClick={handleUpload}
+            >
+              Upload
+            </button>
+          </div>
           <div>
             🥳 App successfully hosted. Try creating a new todo.
             <br />
