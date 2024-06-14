@@ -3,6 +3,8 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import { Authenticator } from '@aws-amplify/ui-react'
 import '@aws-amplify/ui-react/styles.css'
+import TodoCreateForm from './ui-components/TodoCreateForm';
+import { TodoCreateFormInputValues } from "./ui-components/TodoCreateForm";
 
 const client = generateClient<Schema>();
 
@@ -23,6 +25,18 @@ function App() {
     client.models.Todo.delete({ id })
   }
 
+  function onSubmit(fields: TodoCreateFormInputValues): TodoCreateFormInputValues {
+    handleSubmit(fields)
+    return fields
+  }
+
+  async function handleSubmit(fields: TodoCreateFormInputValues) {
+    const { errors, data: newTodo } = await client.models.Todo.create({ content: fields.content, isDone: fields.isDone, dueDate: fields.dueDate })
+    if (errors) {
+      console.error(errors)
+    }
+  }
+
   return (
     <Authenticator>
       {({ signOut, user }) => (
@@ -35,6 +49,7 @@ function App() {
               <li onClick={() => deleteTodo(todo.id)} key={todo.id}>{todo.content}, Done: {todo.isDone ? "Yes" : "No"}</li>
             ))}
           </ul>
+          <TodoCreateForm onSubmit={onSubmit} />
           <div>
             🥳 App successfully hosted. Try creating a new todo.
             <br />

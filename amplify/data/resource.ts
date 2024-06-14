@@ -13,7 +13,7 @@ const schema = a.schema({
       isDone: a.boolean(),
       dueDate: a.date(),
     })
-    .authorization((allow) => [allow.owner()]),
+    .authorization((allow) => [allow.publicApiKey()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
